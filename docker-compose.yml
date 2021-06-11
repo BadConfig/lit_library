@@ -1,0 +1,44 @@
+version: '3'
+services:
+  server:
+    image: badconfig/lit_lib
+    build: .
+    container_name: server
+    tty: true
+    environment:
+      - DATABASE_URL=postgres://main:NavwNgTnxyWsz7hy5yRmEKC4X@lit_lib_postgres:5432/diesel_db
+    ports:
+      - "8088:8088"
+    volumes:
+      - ./migrations/:/litlib/migrations/
+    networks:
+      - app-network
+  postgres:
+    image: "postgres:12.6"
+    container_name: lit_lib_postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: diesel_db
+      POSTGRES_PASSWORD: NavwNgTnxyWsz7hy5yRmEKC4X
+      POSTGRES_USER: main
+    networks:
+      - app-network
+    volumes:
+      - pg_litlib:/var/lib/postgresql/data
+  nginx:
+    image: nginx:1.15-alpine
+    container_name: nginx
+    volumes:
+      - ./data/nginx:/etc/nginx/conf.d
+      - ./static:/var/tools/static
+    ports:
+      - "80:80"
+    networks:
+      - app-network
+volumes:
+  pg_litlib:
+networks:
+  app-network:
+    driver: bridge
